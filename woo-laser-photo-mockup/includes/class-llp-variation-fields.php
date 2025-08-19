@@ -15,9 +15,12 @@ class LLP_Variation_Fields {
      * Enqueue admin scripts for media uploader and field handling.
      */
     public function enqueue_admin_scripts( $hook ) {
-        $screen = get_current_screen();
+        if ( ! in_array( $hook, [ 'post.php', 'post-new.php' ], true ) ) {
+            return;
+        }
 
-        if ( ! in_array( $hook, [ 'post.php', 'post-new.php' ], true ) || empty( $screen ) || 'product' !== $screen->post_type ) {
+        $screen = get_current_screen();
+        if ( empty( $screen ) || 'product' !== $screen->post_type ) {
             return;
         }
 
