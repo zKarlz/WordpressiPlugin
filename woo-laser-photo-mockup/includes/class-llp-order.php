@@ -12,22 +12,25 @@ class LLP_Order {
 
     /**
      * Persist meta to order item.
+     *
+     * Values are sanitized before storage so they can safely surface later in
+     * order screens and emails.
      */
     public function add_order_line_item( $item, $cart_item_key, $values, $order ) {
         if ( isset( $values['llp_asset_id'] ) ) {
-            $item->add_meta_data( '_llp_asset_id', $values['llp_asset_id'], true );
+            $item->add_meta_data( '_llp_asset_id', sanitize_text_field( $values['llp_asset_id'] ), true );
         }
         if ( isset( $values['llp_thumb_url'] ) ) {
-            $item->add_meta_data( '_llp_thumb_url', $values['llp_thumb_url'], true );
+            $item->add_meta_data( '_llp_thumb_url', esc_url_raw( $values['llp_thumb_url'] ), true );
         }
         if ( isset( $values['llp_composite_url'] ) ) {
-            $item->add_meta_data( '_llp_composite_url', $values['llp_composite_url'], true );
+            $item->add_meta_data( '_llp_composite_url', esc_url_raw( $values['llp_composite_url'] ), true );
         }
         if ( isset( $values['llp_original_url'] ) ) {
-            $item->add_meta_data( '_llp_original_url', $values['llp_original_url'], true );
+            $item->add_meta_data( '_llp_original_url', esc_url_raw( $values['llp_original_url'] ), true );
         }
         if ( isset( $values['llp_transform_json'] ) ) {
-            $item->add_meta_data( '_llp_transform_json', $values['llp_transform_json'], true );
+            $item->add_meta_data( '_llp_transform_json', sanitize_textarea_field( $values['llp_transform_json'] ), true );
         }
     }
 
