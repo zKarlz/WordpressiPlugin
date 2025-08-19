@@ -18,13 +18,13 @@
 <?php if ( ! empty( $original_url ) || ! empty( $composite_url ) ) : ?>
     <p>
         <?php if ( ! empty( $original_url ) ) : ?>
-            <a href="<?php echo esc_url( $original_url ); ?>"><?php esc_html_e( 'Original', 'llp' ); ?></a>
+            <a href="<?php echo esc_url( $original_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Original', 'llp' ); ?></a>
         <?php endif; ?>
         <?php if ( ! empty( $original_url ) && ! empty( $composite_url ) ) : ?>
             |
         <?php endif; ?>
         <?php if ( ! empty( $composite_url ) ) : ?>
-            <a href="<?php echo esc_url( $composite_url ); ?>"><?php esc_html_e( 'Composite', 'llp' ); ?></a>
+            <a href="<?php echo esc_url( $composite_url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Composite', 'llp' ); ?></a>
         <?php endif; ?>
     </p>
 <?php endif; ?>
