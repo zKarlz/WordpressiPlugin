@@ -24,14 +24,13 @@ class LLP_Cron {
      */
     public function daily_purge() {
         $retention = LLP_Settings::get( 'retention_days', 30 );
-        $upload    = wp_upload_dir();
-        $base      = trailingslashit( $upload['basedir'] ) . LLP_Storage::BASE_DIR;
+        $base      = LLP_Storage::instance()->base_dir();
         if ( ! is_dir( $base ) ) {
             return;
         }
         $threshold = time() - ( DAY_IN_SECONDS * $retention );
         $used       = LLP_Order::instance()->get_referenced_asset_ids();
-        foreach ( glob( $base . '/*', GLOB_ONLYDIR ) as $dir ) {
+        foreach ( glob( $base . '*', GLOB_ONLYDIR ) as $dir ) {
             $asset_id = basename( $dir );
             if ( in_array( $asset_id, $used, true ) ) {
                 continue;

@@ -204,7 +204,7 @@ class LLP_Storage {
     /**
      * Build asset directory.
      */
-    private function base_dir() {
+    public function base_dir() {
         return trailingslashit( WP_CONTENT_DIR ) . self::BASE_DIR . '/';
     }
 
