@@ -8,7 +8,7 @@
         <input type="file" id="llp-file" accept="image/*" />
     </p>
     <div id="llp-editor" class="llp-editor" style="display:none;">
-        <canvas id="llp-canvas"></canvas>
+        <img id="llp-canvas" src="" alt="" />
         <p><button type="button" id="llp-finalize" class="button">Finalize</button></p>
     </div>
     <div id="llp-preview" class="llp-preview" style="display:none;">
@@ -19,7 +19,8 @@
     <input type="hidden" name="llp_transform" id="llp-transform" />
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.2.4/fabric.min.js" integrity="sha512-4xXHzkwmo7aX6ixkmKuuNHYsYvwdivEafgAvFp8ZUBKbjDg7sWXBJgp7wa9u0edPFsKnz03Wx/ju0RduCMsZ/Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" integrity="sha512-cyzxRvewl+FOKTtpBzYjW6x6IAYUCZy3sGP40hn+DQkqeluGRCax7qztK2ImL64SA+C7kVWdLI6wvdlStawhyw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" integrity="sha512-6lplKUSl86rUVprDIjiW8DuOniNX8UDoRATqZSds/7t6zCQZfaCe3e5zcGaQwxa8Kpn5RTM9Fvl3X2lLV4grPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <?php
 // Expose bounds for each variation to JS.
 global $product;
