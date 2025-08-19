@@ -29,5 +29,6 @@
     </p>
 <?php endif; ?>
 <?php if ( ! empty( $transform_json ) ) : ?>
+    <p><?php esc_html_e( 'Transform JSON:', 'llp' ); ?></p>
     <pre style="white-space:pre-wrap;"><?php echo esc_html( $transform_json ); ?></pre>
 <?php endif; ?>
