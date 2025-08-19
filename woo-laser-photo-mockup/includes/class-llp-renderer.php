@@ -177,4 +177,46 @@ class LLP_Renderer {
 
         return $image;
     }
+
+    /**
+     * Regenerate composites for all items in an order.
+     *
+     * @param int $order_id Order ID.
+     * @return true|WP_Error
+     */
+    public function rerender_order( $order_id ) {
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) {
+            return new WP_Error( 'invalid_order', __( 'Order not found', 'llp' ) );
+        }
+
+        $storage = LLP_Storage::instance();
+
+        foreach ( $order->get_items() as $item ) {
+            $asset_id     = $item->get_meta( '_llp_asset_id', true );
+            $transform    = $item->get_meta( '_llp_transform', true );
+            $variation_id = $item->get_variation_id();
+
+            if ( ! $asset_id || ! $transform || ! $variation_id ) {
+                continue;
+            }
+
+            $transform_arr = json_decode( $transform, true );
+            $result        = $this->generate_composite( $asset_id, $variation_id, $transform_arr );
+            if ( is_wp_error( $result ) ) {
+                continue;
+            }
+
+            $item->update_meta_data( '_llp_thumb_url', $result['thumb'] ?? '' );
+            $item->update_meta_data( '_llp_composite_url', $result['composite'] ?? '' );
+            $urls = $storage->get_asset_urls( $asset_id );
+            if ( ! empty( $urls['original'] ) ) {
+                $item->update_meta_data( '_llp_original_url', $urls['original'] );
+            }
+        }
+
+        $order->save();
+
+        return true;
+    }
 }

@@ -271,4 +271,55 @@ class LLP_Storage {
         readfile( $path );
         exit;
     }
+
+    /**
+     * Recursively remove an asset directory.
+     *
+     * @param string $asset_id Asset identifier.
+     */
+    private function purge_asset( $asset_id ) {
+        $dir = $this->asset_dir( $asset_id );
+        if ( ! is_dir( $dir ) ) {
+            return;
+        }
+        $this->rrmdir( $dir );
+    }
+
+    /**
+     * Remove all LLP files associated with an order.
+     *
+     * @param int $order_id Order ID.
+     * @return true|WP_Error
+     */
+    public function purge_order( $order_id ) {
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) {
+            return new WP_Error( 'invalid_order', __( 'Order not found', 'llp' ) );
+        }
+
+        foreach ( $order->get_items() as $item ) {
+            $asset_id = $item->get_meta( '_llp_asset_id', true );
+            if ( $asset_id ) {
+                $this->purge_asset( $asset_id );
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Recursively delete a directory.
+     *
+     * @param string $dir Directory path.
+     */
+    private function rrmdir( $dir ) {
+        foreach ( glob( trailingslashit( $dir ) . '*' ) as $file ) {
+            if ( is_dir( $file ) ) {
+                $this->rrmdir( $file );
+            } else {
+                @unlink( $file );
+            }
+        }
+        @rmdir( $dir );
+    }
 }
