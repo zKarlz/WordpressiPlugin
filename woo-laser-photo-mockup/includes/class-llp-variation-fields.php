@@ -15,9 +15,16 @@ class LLP_Variation_Fields {
      * Enqueue admin scripts for media uploader and field handling.
      */
     public function enqueue_admin_scripts( $hook ) {
-        if ( 'product_page_product_variation' !== $hook && 'post.php' !== $hook && 'post-new.php' !== $hook ) {
-            // Only enqueue on product edit screen.
+        // Only enqueue scripts on product edit screens.
+        if ( ! in_array( $hook, [ 'post.php', 'post-new.php' ], true ) ) {
+            return;
         }
+
+        $screen = get_current_screen();
+        if ( empty( $screen ) || 'product' !== $screen->post_type ) {
+            return;
+        }
+
         wp_enqueue_media();
         wp_enqueue_style( 'llp-admin', LLP_PLUGIN_URL . 'assets/css/admin.css', [], '1.0.0' );
         wp_enqueue_script( 'llp-admin-variation', LLP_PLUGIN_URL . 'assets/js/admin-variation.js', [ 'jquery' ], '1.0.0', true );
