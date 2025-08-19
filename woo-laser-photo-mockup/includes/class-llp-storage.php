@@ -5,15 +5,21 @@
 class LLP_Storage {
     use LLP_Singleton;
 
-    const BASE_DIR = 'llp';
+    const BASE_DIR = 'llp-private';
+    const URL_TTL  = 300; // seconds
+
+    protected function __construct() {
+        add_action( 'wp_ajax_llp_asset', [ $this, 'serve_file' ] );
+        add_action( 'wp_ajax_nopriv_llp_asset', [ $this, 'serve_file' ] );
+    }
 
     /**
      * Store an uploaded file to private directory.
      */
     public function store_upload( $file ) {
         $asset_id = wp_generate_uuid4();
+        $this->ensure_asset_dir( $asset_id );
         $dir      = $this->asset_dir( $asset_id );
-        wp_mkdir_p( $dir );
 
         $finfo = finfo_open( FILEINFO_MIME_TYPE );
         $mime  = $finfo ? finfo_file( $finfo, $file['tmp_name'] ) : '';
@@ -112,6 +118,14 @@ class LLP_Storage {
      * Ensure asset directory exists.
      */
     public function ensure_asset_dir( $asset_id ) {
+        $base = $this->base_dir();
+        if ( ! file_exists( $base ) ) {
+            wp_mkdir_p( $base );
+        }
+        $htaccess = $base . '.htaccess';
+        if ( ! file_exists( $htaccess ) ) {
+            file_put_contents( $htaccess, "Deny from all\n" );
+        }
         $dir = $this->asset_dir( $asset_id );
         if ( ! file_exists( $dir ) ) {
             wp_mkdir_p( $dir );
@@ -135,16 +149,72 @@ class LLP_Storage {
     /**
      * Build asset directory.
      */
+    private function base_dir() {
+        return trailingslashit( WP_CONTENT_DIR ) . self::BASE_DIR . '/';
+    }
+
     private function asset_dir( $asset_id ) {
-        $upload = wp_upload_dir();
-        return trailingslashit( $upload['basedir'] ) . self::BASE_DIR . '/' . $asset_id . '/';
+        return $this->base_dir() . $asset_id . '/';
     }
 
     /**
      * Get URL for file.
      */
-    public function url_for( $asset_id, $file ) {
-        $upload = wp_upload_dir();
-        return trailingslashit( $upload['baseurl'] ) . self::BASE_DIR . '/' . $asset_id . '/' . $file;
+    public function url_for( $asset_id, $file, $expires = self::URL_TTL ) {
+        $file = $this->normalize_file_name( $file );
+        $expires_at = time() + $expires;
+        $token      = $this->generate_token( $asset_id, $file, $expires_at );
+        $args       = [
+            'action'   => 'llp_asset',
+            'asset_id' => $asset_id,
+            'file'     => $file,
+            'expires'  => $expires_at,
+            'token'    => $token,
+        ];
+        return add_query_arg( $args, admin_url( 'admin-ajax.php' ) );
+    }
+
+    private function normalize_file_name( $file ) {
+        switch ( $file ) {
+            case 'composite':
+                return 'composite.png';
+            case 'thumb':
+                return 'thumb.jpg';
+            default:
+                return basename( $file );
+        }
+    }
+
+    private function generate_token( $asset_id, $file, $expires ) {
+        return hash_hmac( 'sha256', $asset_id . '|' . $file . '|' . $expires, wp_salt( 'llp_storage' ) );
+    }
+
+    public function serve_file() {
+        $asset_id = sanitize_text_field( $_GET['asset_id'] ?? '' );
+        $file     = sanitize_file_name( $_GET['file'] ?? '' );
+        $expires  = absint( $_GET['expires'] ?? 0 );
+        $token    = sanitize_text_field( $_GET['token'] ?? '' );
+
+        if ( ! $asset_id || ! $file || time() > $expires ) {
+            wp_die( __( 'Invalid request', 'llp' ), '', 403 );
+        }
+
+        $expected = $this->generate_token( $asset_id, $file, $expires );
+        if ( ! hash_equals( $expected, $token ) ) {
+            wp_die( __( 'Invalid signature', 'llp' ), '', 403 );
+        }
+
+        $paths = $this->get_asset_paths( $asset_id );
+        $path  = $paths['dir'] . $file;
+        if ( ! file_exists( $path ) ) {
+            wp_die( __( 'File not found', 'llp' ), '', 404 );
+        }
+
+        $mime = wp_check_filetype( $path );
+        if ( $mime && ! headers_sent() ) {
+            header( 'Content-Type: ' . $mime['type'] );
+        }
+        readfile( $path );
+        exit;
     }
 }
