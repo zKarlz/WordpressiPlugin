@@ -55,13 +55,18 @@ class LLP_REST {
     }
 
     /**
-     * Ensure user can act on the specified order if one is provided.
+     * Ensure the user is logged in and can act on the specified order if one is provided.
      */
     private function check_order_capabilities( WP_REST_Request $request ) {
+        if ( ! is_user_logged_in() || ! current_user_can( 'upload_files' ) ) {
+            return new WP_Error( 'rest_forbidden', __( 'You are not allowed to perform this action', 'llp' ), [ 'status' => rest_authorization_required_code() ] );
+        }
+
         $order_id = absint( $request->get_param( 'order_id' ) );
         if ( $order_id && ! current_user_can( 'edit_shop_order', $order_id ) ) {
             return new WP_Error( 'rest_forbidden', __( 'You are not allowed to access this order', 'llp' ), [ 'status' => rest_authorization_required_code() ] );
         }
+
         return true;
     }
 
