@@ -21,8 +21,9 @@ class LLP_Storage {
         $this->ensure_asset_dir( $asset_id );
         $dir      = $this->asset_dir( $asset_id );
 
-        $wp_file = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'] );
-        if ( empty( $wp_file['ext'] ) || empty( $wp_file['type'] ) ) {
+        $allowed = explode( ',', LLP_Settings::get( 'allowed_mimes', 'jpg,jpeg,png,webp' ) );
+        $wp_file = wp_check_filetype( $file['name'] );
+        if ( empty( $wp_file['type'] ) || ! in_array( strtolower( $wp_file['ext'] ), $allowed, true ) ) {
             return new WP_Error( 'mime', __( 'File type not allowed', 'llp' ) );
         }
 
