@@ -50,6 +50,8 @@ class LLP_Plugin {
         LLP_Frontend::instance();
         LLP_REST::instance();
         LLP_Order::instance();
+        LLP_Storage::instance();
+        LLP_Security::instance();
         LLP_Cron::instance();
     }
 }
