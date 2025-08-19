@@ -12,9 +12,9 @@ class LLP_Security {
         if ( $file['error'] !== UPLOAD_ERR_OK ) {
             return new WP_Error( 'upload', __( 'Upload error', 'llp' ) );
         }
-        $allowed   = explode( ',', LLP_Settings::get( 'allowed_mimes', 'jpg,jpeg,png,webp' ) );
-        $ext       = strtolower( pathinfo( $file['name'], PATHINFO_EXTENSION ) );
-        $wp_file   = wp_check_filetype( $file['name'] );
+        $allowed = explode( ',', LLP_Settings::get( 'allowed_mimes', 'jpg,jpeg,png,webp' ) );
+        $wp_file = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'] );
+        $ext     = strtolower( $wp_file['ext'] );
 
         if ( ! in_array( $ext, $allowed, true ) || empty( $wp_file['type'] ) ) {
             return new WP_Error( 'mime', __( 'File type not allowed', 'llp' ) );
