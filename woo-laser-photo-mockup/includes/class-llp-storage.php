@@ -156,6 +156,32 @@ class LLP_Storage {
     }
 
     /**
+     * Get signed URLs for asset files.
+     *
+     * @param string $asset_id Asset identifier.
+     * @param int    $expires   URL lifetime in seconds.
+     * @return array
+     */
+    public function get_asset_urls( $asset_id, $expires = self::URL_TTL ) {
+        $paths = $this->get_asset_paths( $asset_id );
+        $urls  = [];
+
+        if ( ! empty( $paths['original'] ) && file_exists( $paths['original'] ) ) {
+            $urls['original'] = $this->url_for( $asset_id, basename( $paths['original'] ), $expires );
+        }
+
+        if ( file_exists( $paths['composite'] ) ) {
+            $urls['composite'] = $this->url_for( $asset_id, 'composite', $expires );
+        }
+
+        if ( file_exists( $paths['thumb'] ) ) {
+            $urls['thumb'] = $this->url_for( $asset_id, 'thumb', $expires );
+        }
+
+        return $urls;
+    }
+
+    /**
      * Build asset directory.
      */
     private function base_dir() {
