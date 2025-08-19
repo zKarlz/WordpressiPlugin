@@ -1,2 +1,4 @@
 .llp-customizer { margin-bottom: 1em; }
 .llp-preview img { max-width: 100%; height: auto; display:block; }
+.llp-editor canvas { max-width:100%; border:1px solid #ccc; display:block; }
+#llp-finalize { margin-top:0.5em; }
