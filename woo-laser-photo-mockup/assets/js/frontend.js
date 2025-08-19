@@ -6,6 +6,7 @@ jQuery(function($){
     var finalizeBtn = $('#llp-finalize');
     var assetField  = $('#llp-asset-id');
     var thumbField  = $('#llp-thumb-url');
+    var transformField = $('#llp-transform');
     var currentVariation = $('input.variation_id').val() || 0;
 
     var canvas = new fabric.Canvas('llp-canvas', { selection: false });
@@ -28,9 +29,10 @@ jQuery(function($){
             oImg.set({ left:0, top:0, originX:'left', originY:'top' });
             canvas.add(oImg);
             canvas.renderAll();
+            updateTransform();
         });
         editor.show();
-        preview.hide();
+        preview.show();
     }
 
     function clamp(){
@@ -44,9 +46,9 @@ jQuery(function($){
         if(fabricImg.left < minLeft) fabricImg.left = minLeft;
         if(fabricImg.top < minTop) fabricImg.top = minTop;
     }
-    canvas.on('object:moving', clamp);
-    canvas.on('object:scaling', clamp);
-    canvas.on('object:rotating', clamp);
+    canvas.on('object:moving', function(){ clamp(); updateTransform(); });
+    canvas.on('object:scaling', function(){ clamp(); updateTransform(); });
+    canvas.on('object:rotating', function(){ clamp(); updateTransform(); });
 
     function getTransform(){
         if(!fabricImg){
@@ -61,6 +63,14 @@ jQuery(function($){
             height: canvas.height / scale
         };
         return { crop: crop, scale: scale, rotation: rotation };
+    }
+
+    function updateTransform(){
+        var transform = getTransform();
+        transformField.val(JSON.stringify(transform));
+        if(fabricImg){
+            img.attr('src', canvas.toDataURL());
+        }
     }
 
     // Track variation selection
@@ -95,7 +105,8 @@ jQuery(function($){
         if(!assetField.val()) return;
         // Ensure we have the latest selected variation
         currentVariation = $('input.variation_id').val() || currentVariation;
-        var transform = getTransform();
+        updateTransform();
+        var transform = JSON.parse(transformField.val() || '{}');
         fetch(llpVars.restUrl + '/finalize', {
             method: 'POST',
             headers: {
