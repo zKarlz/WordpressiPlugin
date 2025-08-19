@@ -2,15 +2,16 @@ jQuery(function($){
     var fileInput   = $('#llp-file');
     var editor      = $('#llp-editor');
     var preview     = $('#llp-preview');
-    var img         = $('#llp-preview img');
+    var previewImg  = $('#llp-preview img');
     var finalizeBtn = $('#llp-finalize');
     var assetField  = $('#llp-asset-id');
     var thumbField  = $('#llp-thumb-url');
     var transformField = $('#llp-transform');
     var currentVariation = $('input.variation_id').val() || 0;
+    var addToCartBtn = $('.single_add_to_cart_button').prop('disabled', true);
 
-    var canvas = new fabric.Canvas('llp-canvas', { selection: false });
-    var fabricImg = null;
+    var cropperImg = $('#llp-canvas');
+    var cropper = null;
 
     function getBounds(){
         if(window.llpBounds && window.llpBounds[currentVariation]){
@@ -19,61 +20,56 @@ jQuery(function($){
         return { x:0, y:0, width:200, height:200, rotation:0 };
     }
 
-    function initCanvas(url){
+    function initCropper(url){
         var bounds = getBounds();
-        canvas.clear();
-        canvas.setWidth(bounds.width);
-        canvas.setHeight(bounds.height);
-        fabric.Image.fromURL(url, function(oImg){
-            fabricImg = oImg;
-            oImg.set({ left:0, top:0, originX:'left', originY:'top' });
-            canvas.add(oImg);
-            canvas.renderAll();
-            updateTransform();
-        });
-        editor.show();
+        editor.show().css({width:bounds.width, height:bounds.height});
         preview.show();
+        cropperImg.attr('src', url);
+        if(cropper){ cropper.destroy(); }
+        cropper = new Cropper(cropperImg[0], {
+            viewMode:1,
+            dragMode:'move',
+            aspectRatio: bounds.width / bounds.height,
+            autoCropArea:1,
+            movable:true,
+            zoomable:true,
+            rotatable:true,
+            scalable:true,
+            cropBoxMovable:false,
+            cropBoxResizable:false,
+            ready: function(){
+                cropper.setCropBoxData({ width: bounds.width, height: bounds.height });
+                updateTransform();
+            },
+            crop: function(){
+                updateTransform();
+            }
+        });
     }
-
-    function clamp(){
-        if(!fabricImg) return;
-        var maxLeft = 0;
-        var maxTop = 0;
-        var minLeft = canvas.width - fabricImg.getScaledWidth();
-        var minTop = canvas.height - fabricImg.getScaledHeight();
-        if(fabricImg.left > maxLeft) fabricImg.left = maxLeft;
-        if(fabricImg.top > maxTop) fabricImg.top = maxTop;
-        if(fabricImg.left < minLeft) fabricImg.left = minLeft;
-        if(fabricImg.top < minTop) fabricImg.top = minTop;
-    }
-    canvas.on('object:moving', function(){ clamp(); updateTransform(); });
-    canvas.on('object:scaling', function(){ clamp(); updateTransform(); });
-    canvas.on('object:rotating', function(){ clamp(); updateTransform(); });
 
     function getTransform(){
-        if(!fabricImg){
+        if(!cropper){
             return { crop:{x:0,y:0,width:0,height:0}, scale:1, rotation:0 };
         }
-        var scale = fabricImg.scaleX;
-        var rotation = fabricImg.angle;
-        var crop = {
-            x: -fabricImg.left / scale,
-            y: -fabricImg.top / scale,
-            width: canvas.width / scale,
-            height: canvas.height / scale
+        var data = cropper.getData();
+        return {
+            crop: { x: data.x, y: data.y, width: data.width, height: data.height },
+            scale: data.scaleX || 1,
+            rotation: data.rotate || 0
         };
-        return { crop: crop, scale: scale, rotation: rotation };
     }
 
     function updateTransform(){
+        if(!cropper) return;
         var transform = getTransform();
         transformField.val(JSON.stringify(transform));
-        if(fabricImg){
-            img.attr('src', canvas.toDataURL());
+        var bounds = getBounds();
+        var canvas = cropper.getCroppedCanvas({ width: bounds.width, height: bounds.height });
+        if(canvas){
+            previewImg.attr('src', canvas.toDataURL());
         }
     }
 
-    // Track variation selection
     $('form.variations_form').on('found_variation', function(e, variation){
         currentVariation = variation.variation_id || 0;
     }).on('reset_data', function(){
@@ -83,11 +79,13 @@ jQuery(function($){
     fileInput.on('change', function(){
         var file = this.files[0];
         if(!file) return;
+        addToCartBtn.prop('disabled', true);
         var reader = new FileReader();
         reader.onload = function(e){
-            initCanvas(e.target.result);
+            initCropper(e.target.result);
         };
         reader.readAsDataURL(file);
+
         var fd = new FormData();
         fd.append('file', file);
         fetch(llpVars.restUrl + '/upload', {
@@ -102,10 +100,10 @@ jQuery(function($){
     });
 
     finalizeBtn.on('click', function(){
-        if(!assetField.val()) return;
-        // Ensure we have the latest selected variation
+        if(!assetField.val() || !cropper) return;
+        finalizeBtn.prop('disabled', true);
+        addToCartBtn.prop('disabled', true);
         currentVariation = $('input.variation_id').val() || currentVariation;
-        // Capture the latest crop, scale and rotation settings.
         var transform = getTransform();
         transformField.val(JSON.stringify(transform));
 
@@ -122,11 +120,15 @@ jQuery(function($){
             })
         }).then(r => r.json()).then(function(res2){
             if(res2.thumb){
-                img.attr('src', res2.thumb);
+                previewImg.attr('src', res2.thumb);
                 thumbField.val(res2.thumb);
                 preview.show();
                 editor.hide();
+                addToCartBtn.prop('disabled', false);
             }
+        }).finally(function(){
+            finalizeBtn.prop('disabled', false);
         });
     });
 });
+
