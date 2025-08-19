@@ -18,8 +18,11 @@ class LLP_Frontend {
      * Enqueue frontend scripts.
      */
     public function enqueue_scripts() {
+        wp_enqueue_style( 'llp-cropper', LLP_PLUGIN_URL . 'assets/css/cropper.min.css', [], '1.5.13' );
         wp_enqueue_style( 'llp-frontend', LLP_PLUGIN_URL . 'assets/css/frontend.css', [], '1.0.0' );
-        wp_enqueue_script( 'llp-frontend', LLP_PLUGIN_URL . 'assets/js/frontend.js', [ 'jquery' ], '1.0.0', true );
+
+        wp_enqueue_script( 'llp-cropper', LLP_PLUGIN_URL . 'assets/js/cropper.min.js', [], '1.5.13', true );
+        wp_enqueue_script( 'llp-frontend', LLP_PLUGIN_URL . 'assets/js/frontend.js', [ 'jquery', 'llp-cropper' ], '1.0.0', true );
         wp_localize_script( 'llp-frontend', 'llpVars', [
             'restUrl' => esc_url_raw( rest_url( 'llp/v1' ) ),
             'nonce'   => wp_create_nonce( 'wp_rest' ),
