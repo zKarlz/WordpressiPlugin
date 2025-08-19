@@ -7,7 +7,7 @@ class LLP_Order {
 
     protected function __construct() {
         add_action( 'woocommerce_checkout_create_order_line_item', [ $this, 'add_order_line_item' ], 10, 4 );
-        add_action( 'woocommerce_email_after_order_table', [ $this, 'email_thumbnail' ], 10, 4 );
+        add_action( 'woocommerce_order_item_meta_end', [ $this, 'order_item_preview' ], 10, 4 );
     }
 
     /**
@@ -20,20 +20,65 @@ class LLP_Order {
         if ( isset( $values['llp_thumb_url'] ) ) {
             $item->add_meta_data( '_llp_thumb_url', $values['llp_thumb_url'], true );
         }
+        if ( isset( $values['llp_composite_url'] ) ) {
+            $item->add_meta_data( '_llp_composite_url', $values['llp_composite_url'], true );
+        }
+        if ( isset( $values['llp_original_url'] ) ) {
+            $item->add_meta_data( '_llp_original_url', $values['llp_original_url'], true );
+        }
+        if ( isset( $values['llp_transform_json'] ) ) {
+            $item->add_meta_data( '_llp_transform_json', $values['llp_transform_json'], true );
+        }
     }
 
     /**
-     * Show thumbnail in emails.
+     * Output preview and meta in order item display.
+     *
+     * @param int      $item_id    Order item ID.
+     * @param WC_Order_Item $item  Order item object.
+     * @param WC_Order $order      Order object.
+     * @param bool     $plain_text Whether outputting plain text.
      */
-    public function email_thumbnail( $order, $sent_to_admin, $plain_text, $email ) {
+    public function order_item_preview( $item_id, $item, $order, $plain_text = false ) {
         if ( $plain_text ) {
             return;
         }
-        foreach ( $order->get_items() as $item ) {
-            $thumb = $item->get_meta( '_llp_thumb_url', true );
-            if ( $thumb ) {
-                echo '<p><img src="' . esc_url( $thumb ) . '" alt="" style="max-width:80px;" /></p>';
-            }
+
+        $thumb      = $item->get_meta( '_llp_thumb_url', true );
+        $asset_id   = $item->get_meta( '_llp_asset_id', true );
+        $composite  = $item->get_meta( '_llp_composite_url', true );
+        $original   = $item->get_meta( '_llp_original_url', true );
+        $transform  = $item->get_meta( '_llp_transform_json', true );
+
+        if ( ! $thumb && ! $asset_id && ! $composite && ! $original && ! $transform ) {
+            return;
         }
+
+        wc_get_template(
+            'emails/line-item-preview.php',
+            [
+                'thumb_url'      => $thumb,
+                'asset_id'       => $asset_id,
+                'composite_url'  => $composite,
+                'original_url'   => $original,
+                'transform_json' => $transform,
+            ],
+            '',
+            LLP_PLUGIN_DIR . 'templates/'
+        );
+    }
+
+    /**
+     * Retrieve all asset IDs referenced by orders.
+     *
+     * @return array
+     */
+    public function get_referenced_asset_ids() {
+        global $wpdb;
+
+        $table = $wpdb->prefix . 'woocommerce_order_itemmeta';
+        $results = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT meta_value FROM {$table} WHERE meta_key = %s", '_llp_asset_id' ) );
+
+        return array_filter( array_map( 'sanitize_text_field', (array) $results ) );
     }
 }

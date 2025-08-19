@@ -30,7 +30,12 @@ class LLP_Cron {
             return;
         }
         $threshold = time() - ( DAY_IN_SECONDS * $retention );
+        $used       = LLP_Order::instance()->get_referenced_asset_ids();
         foreach ( glob( $base . '/*', GLOB_ONLYDIR ) as $dir ) {
+            $asset_id = basename( $dir );
+            if ( in_array( $asset_id, $used, true ) ) {
+                continue;
+            }
             if ( filemtime( $dir ) < $threshold ) {
                 $this->rrmdir( $dir );
             }
