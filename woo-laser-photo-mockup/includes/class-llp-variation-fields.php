@@ -23,7 +23,13 @@ class LLP_Variation_Fields {
 
         wp_enqueue_media();
         wp_enqueue_style( 'llp-admin', LLP_PLUGIN_URL . 'assets/css/admin.css', [], '1.0.0' );
-        wp_enqueue_script( 'llp-admin-variation', LLP_PLUGIN_URL . 'assets/js/admin-variation.js', [ 'jquery' ], '1.0.0', true );
+        wp_enqueue_script(
+            'llp-admin-variation',
+            LLP_PLUGIN_URL . 'assets/js/admin-variation.js',
+            [ 'jquery', 'jquery-ui-draggable', 'jquery-ui-resizable' ],
+            '1.0.0',
+            true
+        );
     }
 
     /**
@@ -33,6 +39,7 @@ class LLP_Variation_Fields {
         $base_id = get_post_meta( $variation->ID, '_llp_base_image_id', true );
         $mask_id = get_post_meta( $variation->ID, '_llp_mask_image_id', true );
         $bounds  = get_post_meta( $variation->ID, '_llp_bounds', true );
+        $base_src = $base_id ? wp_get_attachment_image_url( $base_id, 'full' ) : '';
         $aspect  = get_post_meta( $variation->ID, '_llp_aspect_ratio', true );
         $min_res = get_post_meta( $variation->ID, '_llp_min_resolution', true );
         $dpi     = get_post_meta( $variation->ID, '_llp_output_dpi', true );
@@ -48,9 +55,19 @@ class LLP_Variation_Fields {
                 <input type="hidden" class="llp-media-field" name="llp_mask_image_id[<?php echo esc_attr( $variation->ID ); ?>]" value="<?php echo esc_attr( $mask_id ); ?>" />
                 <button class="button llp-select-media"><?php esc_html_e( 'Select Mask', 'llp' ); ?></button>
             </p>
-            <p>
-                <label><?php esc_html_e( 'Bounds (JSON)', 'llp' ); ?></label>
-                <textarea name="llp_bounds[<?php echo esc_attr( $variation->ID ); ?>]" rows="2" cols="20"><?php echo esc_textarea( $bounds ); ?></textarea>
+            <p class="llp-bounds-field">
+                <label><?php esc_html_e( 'Bounds', 'llp' ); ?></label>
+                <input type="hidden" class="llp-bounds-input" name="llp_bounds[<?php echo esc_attr( $variation->ID ); ?>]" value="<?php echo esc_attr( $bounds ); ?>" />
+            </p>
+            <div class="llp-bounds-wrapper">
+                <?php if ( $base_src ) : ?>
+                    <img src="<?php echo esc_url( $base_src ); ?>" class="llp-base-image" alt="" />
+                <?php endif; ?>
+                <div class="llp-overlay"></div>
+            </div>
+            <p class="llp-rotation-field">
+                <label><?php esc_html_e( 'Rotation', 'llp' ); ?></label>
+                <input type="range" class="llp-rotation" min="0" max="360" value="0" />
             </p>
             <p>
                 <label><?php esc_html_e( 'Aspect Ratio (e.g. 4:3)', 'llp' ); ?></label>
