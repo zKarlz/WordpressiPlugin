@@ -90,9 +90,9 @@ class LLP_REST {
      * Finalize and generate composite.
      */
     public function handle_finalize( WP_REST_Request $request ) {
-        $asset_id     = sanitize_text_field( $request['asset_id'] );
-        $variation_id = absint( $request['variation_id'] );
-        $transform    = $request['transform'];
+        $asset_id     = sanitize_text_field( $request->get_param( 'asset_id' ) );
+        $variation_id = absint( $request->get_param( 'variation_id' ) );
+        $transform    = $request->get_param( 'transform' );
 
         if ( empty( $asset_id ) ) {
             return new WP_Error( 'missing', __( 'Missing asset ID', 'llp' ), [ 'status' => 400 ] );
@@ -107,11 +107,9 @@ class LLP_REST {
         }
 
         $transform = wp_parse_args( $transform, [ 'crop' => [], 'scale' => 1, 'rotation' => 0 ] );
-        $crop      = wp_parse_args( $transform['crop'], [ 'x' => 0, 'y' => 0, 'width' => 0, 'height' => 0 ] );
-
-        foreach ( [ 'x', 'y', 'width', 'height' ] as $key ) {
-            $crop[ $key ] = floatval( $crop[ $key ] );
-        }
+        $crop      = is_array( $transform['crop'] ) ? $transform['crop'] : [];
+        $crop      = wp_parse_args( $crop, [ 'x' => 0, 'y' => 0, 'width' => 0, 'height' => 0 ] );
+        $crop      = array_map( 'floatval', array_intersect_key( $crop, array_flip( [ 'x', 'y', 'width', 'height' ] ) ) );
 
         $transform = [
             'crop'     => $crop,

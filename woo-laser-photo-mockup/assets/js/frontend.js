@@ -46,6 +46,7 @@ jQuery(function($){
     }
     canvas.on('object:moving', clamp);
     canvas.on('object:scaling', clamp);
+    canvas.on('object:rotating', clamp);
 
     function getTransform(){
         if(!fabricImg){
@@ -92,6 +93,8 @@ jQuery(function($){
 
     finalizeBtn.on('click', function(){
         if(!assetField.val()) return;
+        // Ensure we have the latest selected variation
+        currentVariation = $('input.variation_id').val() || currentVariation;
         var transform = getTransform();
         fetch(llpVars.restUrl + '/finalize', {
             method: 'POST',
