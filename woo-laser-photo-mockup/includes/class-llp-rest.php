@@ -99,11 +99,20 @@ class LLP_REST {
         $variation_id = absint( $request->get_param( 'variation_id' ) );
         $transform    = $request->get_param( 'transform' );
 
+        // Allow transform to be passed as JSON string and sanitize fields.
+        if ( is_string( $transform ) ) {
+            $transform = json_decode( wp_unslash( $transform ), true );
+        }
+
         if ( empty( $asset_id ) ) {
             return new WP_Error( 'missing', __( 'Missing asset ID', 'llp' ), [ 'status' => 400 ] );
         }
 
-        if ( ! $variation_id || 'product_variation' !== get_post_type( $variation_id ) ) {
+        if ( ! $variation_id ) {
+            return new WP_Error( 'missing_variation', __( 'Missing variation ID', 'llp' ), [ 'status' => 400 ] );
+        }
+
+        if ( 'product_variation' !== get_post_type( $variation_id ) ) {
             return new WP_Error( 'invalid_variation', __( 'Invalid variation ID', 'llp' ), [ 'status' => 400 ] );
         }
 

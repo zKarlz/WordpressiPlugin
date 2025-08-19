@@ -105,15 +105,21 @@ jQuery(function($){
         if(!assetField.val()) return;
         // Ensure we have the latest selected variation
         currentVariation = $('input.variation_id').val() || currentVariation;
-        updateTransform();
-        var transform = JSON.parse(transformField.val() || '{}');
+        // Capture the latest crop, scale and rotation settings.
+        var transform = getTransform();
+        transformField.val(JSON.stringify(transform));
+
         fetch(llpVars.restUrl + '/finalize', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-WP-Nonce': llpVars.nonce
             },
-            body: JSON.stringify({asset_id: assetField.val(), variation_id: currentVariation, transform: transform})
+            body: JSON.stringify({
+                asset_id: assetField.val(),
+                variation_id: currentVariation,
+                transform: transform
+            })
         }).then(r => r.json()).then(function(res2){
             if(res2.thumb){
                 img.attr('src', res2.thumb);
