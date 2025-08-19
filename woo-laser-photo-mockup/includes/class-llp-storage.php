@@ -11,6 +11,22 @@ class LLP_Storage {
     protected function __construct() {
         add_action( 'wp_ajax_llp_asset', [ $this, 'serve_file' ] );
         add_action( 'wp_ajax_nopriv_llp_asset', [ $this, 'serve_file' ] );
+        add_action( 'rest_api_init', [ $this, 'register_routes' ] );
+    }
+
+    /**
+     * Register REST route for secured asset delivery.
+     */
+    public function register_routes() {
+        register_rest_route(
+            'llp/v1',
+            '/asset',
+            [
+                'methods'             => 'GET',
+                'callback'            => [ $this, 'serve_file' ],
+                'permission_callback' => '__return_true',
+            ]
+        );
     }
 
     /**
@@ -134,7 +150,10 @@ class LLP_Storage {
         }
         $htaccess = $base . '.htaccess';
         if ( ! file_exists( $htaccess ) ) {
-            file_put_contents( $htaccess, "Deny from all\n" );
+            file_put_contents(
+                $htaccess,
+                "Deny from all\n<IfModule mod_authz_core.c>\n    Require all denied\n</IfModule>\n"
+            );
         }
         $dir = $this->asset_dir( $asset_id );
         if ( ! file_exists( $dir ) ) {
@@ -201,13 +220,12 @@ class LLP_Storage {
         $expires_at = time() + $expires;
         $token      = $this->generate_token( $asset_id, $file, $expires_at );
         $args       = [
-            'action'   => 'llp_asset',
             'asset_id' => $asset_id,
             'file'     => $file,
             'expires'  => $expires_at,
             'token'    => $token,
         ];
-        return add_query_arg( $args, admin_url( 'admin-ajax.php' ) );
+        return add_query_arg( $args, rest_url( 'llp/v1/asset' ) );
     }
 
     private function normalize_file_name( $file ) {
@@ -225,11 +243,11 @@ class LLP_Storage {
         return hash_hmac( 'sha256', $asset_id . '|' . $file . '|' . $expires, wp_salt( 'llp_storage' ) );
     }
 
-    public function serve_file() {
-        $asset_id = sanitize_text_field( $_GET['asset_id'] ?? '' );
-        $file     = sanitize_file_name( $_GET['file'] ?? '' );
-        $expires  = absint( $_GET['expires'] ?? 0 );
-        $token    = sanitize_text_field( $_GET['token'] ?? '' );
+    public function serve_file( ?WP_REST_Request $request = null ) {
+        $asset_id = sanitize_text_field( $request ? $request->get_param( 'asset_id' ) : ( $_GET['asset_id'] ?? '' ) );
+        $file     = sanitize_file_name( $request ? $request->get_param( 'file' ) : ( $_GET['file'] ?? '' ) );
+        $expires  = absint( $request ? $request->get_param( 'expires' ) : ( $_GET['expires'] ?? 0 ) );
+        $token    = sanitize_text_field( $request ? $request->get_param( 'token' ) : ( $_GET['token'] ?? '' ) );
 
         if ( ! $asset_id || ! $file || time() > $expires ) {
             wp_die( __( 'Invalid request', 'llp' ), '', 403 );
