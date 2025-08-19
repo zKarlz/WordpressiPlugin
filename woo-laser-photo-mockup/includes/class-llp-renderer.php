@@ -8,9 +8,9 @@ class LLP_Renderer {
     /**
      * Generate composite image and thumbnail.
      *
-     * @param string $asset_id Asset identifier.
+     * @param string $asset_id   Asset identifier.
      * @param int    $variation_id Product variation ID.
-     * @param array  $transform Transform parameters.
+     * @param string|array $transform Transform parameters as JSON string or array.
      * @return array|WP_Error
      */
     public function generate_composite( $asset_id, $variation_id, $transform ) {
@@ -27,22 +27,19 @@ class LLP_Renderer {
         $bounds = get_post_meta( $variation_id, '_llp_bounds', true );
         $bounds = $bounds ? json_decode( $bounds, true ) : [ 'x' => 0, 'y' => 0, 'width' => 100, 'height' => 100, 'rotation' => 0 ];
 
-        // Parse transform for scale/position/rotation.
+        // Parse transform JSON for scale/position/rotation.
         $scale    = 1;
         $rotation = 0;
         $position = [ 'x' => 0, 'y' => 0 ];
         if ( is_string( $transform ) ) {
-            if ( preg_match( '/scale\((-?[0-9\.]+)\)/', $transform, $m ) ) {
-                $scale = floatval( $m[1] );
+            $decoded = json_decode( $transform, true );
+            if ( json_last_error() === JSON_ERROR_NONE ) {
+                $transform = $decoded;
+            } else {
+                $transform = [];
             }
-            if ( preg_match( '/translate\((-?[0-9\.]+)\s*,\s*(-?[0-9\.]+)\)/', $transform, $m ) ) {
-                $position['x'] = floatval( $m[1] );
-                $position['y'] = floatval( $m[2] );
-            }
-            if ( preg_match( '/rotate\((-?[0-9\.]+)\)/', $transform, $m ) ) {
-                $rotation = floatval( $m[1] );
-            }
-        } elseif ( is_array( $transform ) ) {
+        }
+        if ( is_array( $transform ) ) {
             $scale    = isset( $transform['scale'] ) ? floatval( $transform['scale'] ) : 1;
             $rotation = isset( $transform['rotation'] ) ? floatval( $transform['rotation'] ) : 0;
             if ( isset( $transform['position'] ) && is_array( $transform['position'] ) ) {
@@ -56,13 +53,19 @@ class LLP_Renderer {
         if ( ! $info ) {
             return new WP_Error( 'img', __( 'Could not read base image', 'llp' ) );
         }
-        switch ( $info[2] ) {
-            case IMAGETYPE_JPEG:
+        $mime = $info['mime'] ?? '';
+        switch ( $mime ) {
+            case 'image/jpeg':
+            case 'image/pjpeg':
                 $base = imagecreatefromjpeg( $base_path );
                 break;
-            case IMAGETYPE_GIF:
+            case 'image/gif':
                 $base = imagecreatefromgif( $base_path );
                 break;
+            case 'image/webp':
+                $base = function_exists( 'imagecreatefromwebp' ) ? imagecreatefromwebp( $base_path ) : false;
+                break;
+            case 'image/png':
             default:
                 $base = imagecreatefrompng( $base_path );
                 break;
@@ -92,16 +95,25 @@ class LLP_Renderer {
         $mask_path = $mask_id ? get_attached_file( $mask_id ) : '';
         if ( $mask_path && file_exists( $mask_path ) ) {
             $mask_info = getimagesize( $mask_path );
-            switch ( $mask_info[2] ) {
-                case IMAGETYPE_JPEG:
-                    $mask = imagecreatefromjpeg( $mask_path );
-                    break;
-                case IMAGETYPE_GIF:
-                    $mask = imagecreatefromgif( $mask_path );
-                    break;
-                default:
-                    $mask = imagecreatefrompng( $mask_path );
-                    break;
+            $mask      = false;
+            if ( $mask_info ) {
+                $mask_mime = $mask_info['mime'] ?? '';
+                switch ( $mask_mime ) {
+                    case 'image/jpeg':
+                    case 'image/pjpeg':
+                        $mask = imagecreatefromjpeg( $mask_path );
+                        break;
+                    case 'image/gif':
+                        $mask = imagecreatefromgif( $mask_path );
+                        break;
+                    case 'image/webp':
+                        $mask = function_exists( 'imagecreatefromwebp' ) ? imagecreatefromwebp( $mask_path ) : false;
+                        break;
+                    case 'image/png':
+                    default:
+                        $mask = imagecreatefrompng( $mask_path );
+                        break;
+                }
             }
             if ( $mask ) {
                 $resized = imagecreatetruecolor( imagesx( $tmp ), imagesy( $tmp ) );
