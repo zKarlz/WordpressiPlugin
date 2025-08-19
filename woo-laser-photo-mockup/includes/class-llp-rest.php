@@ -42,7 +42,7 @@ class LLP_REST {
             return $this->check_order_capabilities( $request );
         }
 
-        // Allow custom token for unauthenticated requests.
+        // Allow a custom token as an alternative authorization header.
         $token = $request->get_header( 'X-LLP-Token' );
         if ( ! $token ) {
             $token = $request->get_param( 'token' );
