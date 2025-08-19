@@ -23,6 +23,89 @@ class LLP_REST {
             'callback'            => [ $this, 'handle_finalize' ],
             'permission_callback' => [ $this, 'authorize_request' ],
         ] );
+
+        register_rest_route( 'llp/v1', '/file/(?P<asset>[a-z0-9-]+)/(?P<type>[a-z0-9._-]+)', [
+            'methods'             => 'GET',
+            'callback'            => [ $this, 'handle_file' ],
+            'permission_callback' => '__return_true',
+        ] );
+
+        register_rest_route( 'llp/v1', '/order/(?P<id>\d+)/purge', [
+            'methods'             => 'POST',
+            'callback'            => [ $this, 'handle_order_purge' ],
+            'permission_callback' => [ $this, 'can_manage_order' ],
+        ] );
+
+        register_rest_route( 'llp/v1', '/order/(?P<id>\d+)/rerender', [
+            'methods'             => 'POST',
+            'callback'            => [ $this, 'handle_order_rerender' ],
+            'permission_callback' => [ $this, 'can_manage_order' ],
+        ] );
+    }
+
+    /**
+     * Stream a secured file after verifying the signed token.
+     */
+    public function handle_file( WP_REST_Request $request ) {
+        $asset   = sanitize_text_field( $request['asset'] );
+        $type    = sanitize_text_field( $request['type'] );
+        $storage = LLP_Storage::instance();
+
+        $paths = $storage->get_asset_paths( $asset );
+        switch ( $type ) {
+            case 'original':
+                $file = $paths['original'] ? basename( $paths['original'] ) : '';
+                break;
+            case 'composite':
+                $file = 'composite.png';
+                break;
+            case 'thumb':
+                $file = 'thumb.jpg';
+                break;
+            default:
+                $file = $type;
+        }
+
+        if ( empty( $file ) ) {
+            return new WP_Error( 'not_found', __( 'File not found', 'llp' ), [ 'status' => 404 ] );
+        }
+
+        $request->set_param( 'asset_id', $asset );
+        $request->set_param( 'file', $file );
+
+        $storage->serve_file( $request );
+    }
+
+    /**
+     * Capability check for order routes.
+     */
+    public function can_manage_order( WP_REST_Request $request ) {
+        $order_id = absint( $request['id'] );
+        return current_user_can( 'edit_shop_order', $order_id );
+    }
+
+    /**
+     * Purge stored assets for an order.
+     */
+    public function handle_order_purge( WP_REST_Request $request ) {
+        $order_id = absint( $request['id'] );
+        $result   = LLP_Storage::instance()->purge_order( $order_id );
+        if ( is_wp_error( $result ) ) {
+            return $result;
+        }
+        return rest_ensure_response( [ 'purged' => true ] );
+    }
+
+    /**
+     * Re-render composites for order items.
+     */
+    public function handle_order_rerender( WP_REST_Request $request ) {
+        $order_id = absint( $request['id'] );
+        $result   = LLP_Renderer::instance()->rerender_order( $order_id );
+        if ( is_wp_error( $result ) ) {
+            return $result;
+        }
+        return rest_ensure_response( [ 'rerendered' => true ] );
     }
 
     /**
