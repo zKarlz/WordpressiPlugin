@@ -21,13 +21,22 @@ class LLP_Storage {
         $this->ensure_asset_dir( $asset_id );
         $dir      = $this->asset_dir( $asset_id );
 
+        $wp_file = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'] );
+        if ( empty( $wp_file['ext'] ) || empty( $wp_file['type'] ) ) {
+            return new WP_Error( 'mime', __( 'File type not allowed', 'llp' ) );
+        }
+
         $finfo = finfo_open( FILEINFO_MIME_TYPE );
         $mime  = $finfo ? finfo_file( $finfo, $file['tmp_name'] ) : '';
         if ( $finfo ) {
             finfo_close( $finfo );
         }
 
-        $ext  = strtolower( pathinfo( $file['name'], PATHINFO_EXTENSION ) );
+        if ( $mime !== $wp_file['type'] ) {
+            return new WP_Error( 'mime', __( 'File type mismatch', 'llp' ) );
+        }
+
+        $ext  = strtolower( $wp_file['ext'] );
         $dest = $dir . 'original.' . $ext;
 
         $processed = $this->reencode_image( $file['tmp_name'], $dest, $mime );
