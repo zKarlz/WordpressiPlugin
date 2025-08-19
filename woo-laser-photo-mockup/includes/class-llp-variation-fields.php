@@ -93,13 +93,34 @@ class LLP_Variation_Fields {
      */
     public function save_fields( $variation_id, $i ) {
         $fields = [
-            '_llp_base_image_id'   => isset( $_POST['llp_base_image_id'][ $variation_id ] ) ? absint( $_POST['llp_base_image_id'][ $variation_id ] ) : '',
-            '_llp_mask_image_id'   => isset( $_POST['llp_mask_image_id'][ $variation_id ] ) ? absint( $_POST['llp_mask_image_id'][ $variation_id ] ) : '',
-            '_llp_bounds'          => isset( $_POST['llp_bounds'][ $variation_id ] ) ? wp_kses_post( wp_unslash( $_POST['llp_bounds'][ $variation_id ] ) ) : '',
-            '_llp_aspect_ratio'    => isset( $_POST['llp_aspect_ratio'][ $variation_id ] ) ? sanitize_text_field( $_POST['llp_aspect_ratio'][ $variation_id ] ) : '',
-            '_llp_min_resolution'  => isset( $_POST['llp_min_resolution'][ $variation_id ] ) ? sanitize_text_field( $_POST['llp_min_resolution'][ $variation_id ] ) : '',
-            '_llp_output_dpi'      => isset( $_POST['llp_output_dpi'][ $variation_id ] ) ? absint( $_POST['llp_output_dpi'][ $variation_id ] ) : '',
+            '_llp_base_image_id'  => isset( $_POST['llp_base_image_id'][ $variation_id ] ) ? absint( $_POST['llp_base_image_id'][ $variation_id ] ) : '',
+            '_llp_mask_image_id'  => isset( $_POST['llp_mask_image_id'][ $variation_id ] ) ? absint( $_POST['llp_mask_image_id'][ $variation_id ] ) : '',
+            '_llp_aspect_ratio'   => isset( $_POST['llp_aspect_ratio'][ $variation_id ] ) ? sanitize_text_field( $_POST['llp_aspect_ratio'][ $variation_id ] ) : '',
+            '_llp_min_resolution' => isset( $_POST['llp_min_resolution'][ $variation_id ] ) ? sanitize_text_field( $_POST['llp_min_resolution'][ $variation_id ] ) : '',
+            '_llp_output_dpi'     => isset( $_POST['llp_output_dpi'][ $variation_id ] ) ? absint( $_POST['llp_output_dpi'][ $variation_id ] ) : '',
         ];
+
+        // Sanitize and persist the bounds JSON separately so numeric values are always stored.
+        if ( isset( $_POST['llp_bounds'][ $variation_id ] ) ) {
+            $raw_bounds = wp_unslash( $_POST['llp_bounds'][ $variation_id ] );
+            $decoded    = json_decode( $raw_bounds, true );
+
+            if ( is_array( $decoded ) ) {
+                $decoded = [
+                    'x'        => isset( $decoded['x'] ) ? floatval( $decoded['x'] ) : 0,
+                    'y'        => isset( $decoded['y'] ) ? floatval( $decoded['y'] ) : 0,
+                    'width'    => isset( $decoded['width'] ) ? floatval( $decoded['width'] ) : 0,
+                    'height'   => isset( $decoded['height'] ) ? floatval( $decoded['height'] ) : 0,
+                    'rotation' => isset( $decoded['rotation'] ) ? floatval( $decoded['rotation'] ) : 0,
+                ];
+                update_post_meta( $variation_id, '_llp_bounds', wp_json_encode( $decoded ) );
+            } else {
+                delete_post_meta( $variation_id, '_llp_bounds' );
+            }
+        } else {
+            delete_post_meta( $variation_id, '_llp_bounds' );
+        }
+
         foreach ( $fields as $meta_key => $value ) {
             if ( '' !== $value ) {
                 update_post_meta( $variation_id, $meta_key, $value );
