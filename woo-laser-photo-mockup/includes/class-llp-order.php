@@ -29,8 +29,8 @@ class LLP_Order {
         if ( isset( $values['llp_original_url'] ) ) {
             $item->add_meta_data( '_llp_original_url', esc_url_raw( $values['llp_original_url'] ), true );
         }
-        if ( isset( $values['llp_transform_json'] ) ) {
-            $item->add_meta_data( '_llp_transform_json', sanitize_textarea_field( $values['llp_transform_json'] ), true );
+        if ( isset( $values['llp_transform'] ) ) {
+            $item->add_meta_data( '_llp_transform', sanitize_textarea_field( $values['llp_transform'] ), true );
         }
     }
 
@@ -51,7 +51,7 @@ class LLP_Order {
         $asset_id   = $item->get_meta( '_llp_asset_id', true );
         $composite  = $item->get_meta( '_llp_composite_url', true );
         $original   = $item->get_meta( '_llp_original_url', true );
-        $transform  = $item->get_meta( '_llp_transform_json', true );
+        $transform  = $item->get_meta( '_llp_transform', true );
 
         if ( ! $thumb && ! $asset_id && ! $composite && ! $original && ! $transform ) {
             return;
