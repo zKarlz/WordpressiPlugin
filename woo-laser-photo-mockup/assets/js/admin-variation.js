@@ -52,10 +52,10 @@ jQuery(function($){
             var rot = parseFloat(rotation.val()) || 0;
             overlay.css('transform','rotate('+rot+'deg)');
             var bounds = {
-                x: pos.left,
-                y: pos.top,
-                width: overlay.width(),
-                height: overlay.height(),
+                x: Math.round(pos.left),
+                y: Math.round(pos.top),
+                width: Math.round(overlay.width()),
+                height: Math.round(overlay.height()),
                 rotation: rot
             };
             boundsInput.val(JSON.stringify(bounds));
