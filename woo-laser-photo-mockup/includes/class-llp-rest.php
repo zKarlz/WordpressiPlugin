@@ -16,13 +16,53 @@ class LLP_REST {
         register_rest_route( 'llp/v1', '/upload', [
             'methods'             => 'POST',
             'callback'            => [ $this, 'handle_upload' ],
-            'permission_callback' => '__return_true',
+            'permission_callback' => [ $this, 'authorize_request' ],
         ] );
         register_rest_route( 'llp/v1', '/finalize', [
             'methods'             => 'POST',
             'callback'            => [ $this, 'handle_finalize' ],
-            'permission_callback' => '__return_true',
+            'permission_callback' => [ $this, 'authorize_request' ],
         ] );
+    }
+
+    /**
+     * Permission callback for REST requests.
+     *
+     * Requires a valid wp_rest nonce or a custom token. When an order ID is
+     * provided the current user must also have permission to manage that
+     * specific order.
+     */
+    public function authorize_request( WP_REST_Request $request ) {
+        // Verify wp_rest nonce from header or request parameter.
+        $nonce = $request->get_header( 'X-WP-Nonce' );
+        if ( ! $nonce ) {
+            $nonce = $request->get_param( '_wpnonce' );
+        }
+        if ( $nonce && wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+            return $this->check_order_capabilities( $request );
+        }
+
+        // Allow custom token for unauthenticated requests.
+        $token = $request->get_header( 'X-LLP-Token' );
+        if ( ! $token ) {
+            $token = $request->get_param( 'token' );
+        }
+        if ( $token && defined( 'LLP_REST_TOKEN' ) && hash_equals( LLP_REST_TOKEN, $token ) ) {
+            return $this->check_order_capabilities( $request );
+        }
+
+        return new WP_Error( 'rest_forbidden', __( 'Invalid nonce or token', 'llp' ), [ 'status' => rest_authorization_required_code() ] );
+    }
+
+    /**
+     * Ensure user can act on the specified order if one is provided.
+     */
+    private function check_order_capabilities( WP_REST_Request $request ) {
+        $order_id = absint( $request->get_param( 'order_id' ) );
+        if ( $order_id && ! current_user_can( 'edit_shop_order', $order_id ) ) {
+            return new WP_Error( 'rest_forbidden', __( 'You are not allowed to access this order', 'llp' ), [ 'status' => rest_authorization_required_code() ] );
+        }
+        return true;
     }
 
     /**
