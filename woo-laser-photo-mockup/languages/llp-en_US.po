@@ -1,0 +1,5 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Woo Laser Photo Mockup 1.0.0\n"
+"Language: en_US\n"
+
