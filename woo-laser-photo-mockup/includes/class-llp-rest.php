@@ -50,12 +50,35 @@ class LLP_REST {
      * Finalize and generate composite.
      */
     public function handle_finalize( WP_REST_Request $request ) {
-        $asset_id    = sanitize_text_field( $request['asset_id'] );
+        $asset_id     = sanitize_text_field( $request['asset_id'] );
         $variation_id = absint( $request['variation_id'] );
-        $transform   = $request['transform'];
-        if ( empty( $asset_id ) || empty( $variation_id ) || empty( $transform ) ) {
-            return new WP_Error( 'missing', __( 'Missing data', 'llp' ), [ 'status' => 400 ] );
+        $transform    = $request['transform'];
+
+        if ( empty( $asset_id ) ) {
+            return new WP_Error( 'missing', __( 'Missing asset ID', 'llp' ), [ 'status' => 400 ] );
         }
+
+        if ( ! $variation_id || 'product_variation' !== get_post_type( $variation_id ) ) {
+            return new WP_Error( 'invalid_variation', __( 'Invalid variation ID', 'llp' ), [ 'status' => 400 ] );
+        }
+
+        if ( ! is_array( $transform ) ) {
+            return new WP_Error( 'invalid_transform', __( 'Transform must be an object', 'llp' ), [ 'status' => 400 ] );
+        }
+
+        $transform = wp_parse_args( $transform, [ 'crop' => [], 'scale' => 1, 'rotation' => 0 ] );
+        $crop      = wp_parse_args( $transform['crop'], [ 'x' => 0, 'y' => 0, 'width' => 0, 'height' => 0 ] );
+
+        foreach ( [ 'x', 'y', 'width', 'height' ] as $key ) {
+            $crop[ $key ] = floatval( $crop[ $key ] );
+        }
+
+        $transform = [
+            'crop'     => $crop,
+            'scale'    => floatval( $transform['scale'] ),
+            'rotation' => floatval( $transform['rotation'] ),
+        ];
+
         $renderer = LLP_Renderer::instance();
         $result   = $renderer->generate_composite( $asset_id, $variation_id, $transform );
         if ( is_wp_error( $result ) ) {
