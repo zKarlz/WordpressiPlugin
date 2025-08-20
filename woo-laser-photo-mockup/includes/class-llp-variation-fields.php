@@ -51,12 +51,12 @@ class LLP_Variation_Fields {
             <p>
                 <label><?php esc_html_e( 'Base Image', 'llp' ); ?></label>
                 <input type="hidden" class="llp-media-field" name="llp_base_image_id[<?php echo esc_attr( $variation->ID ); ?>]" value="<?php echo esc_attr( $base_id ); ?>" />
-                <button class="button llp-select-media"><?php esc_html_e( 'Select Image', 'llp' ); ?></button>
+                <button type="button" class="button llp-select-media"><?php esc_html_e( 'Select Image', 'llp' ); ?></button>
             </p>
             <p>
                 <label><?php esc_html_e( 'Mask Image', 'llp' ); ?></label>
                 <input type="hidden" class="llp-media-field" name="llp_mask_image_id[<?php echo esc_attr( $variation->ID ); ?>]" value="<?php echo esc_attr( $mask_id ); ?>" />
-                <button class="button llp-select-media"><?php esc_html_e( 'Select Mask', 'llp' ); ?></button>
+                <button type="button" class="button llp-select-media"><?php esc_html_e( 'Select Mask', 'llp' ); ?></button>
             </p>
             <p class="llp-bounds-field">
                 <label><?php esc_html_e( 'Bounds', 'llp' ); ?></label>

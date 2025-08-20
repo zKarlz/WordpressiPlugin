@@ -1,31 +1,28 @@
 jQuery(function($){
-    function initUploader(button){
-        var frame;
-        button.on('click', function(e){
-            e.preventDefault();
-            var input = $(this).prev('.llp-media-field');
-            if(frame){
-                frame.open();
-                return;
-            }
-            frame = wp.media({
-                title: 'Select image',
-                button: {text: 'Use image'},
-                multiple: false
-            });
-            frame.on('select', function(){
-                var attachment = frame.state().get('selection').first().toJSON();
-                input.val(attachment.id).trigger('change');
-                if(input.attr('name').indexOf('llp_base_image_id') !== -1){
-                    var container = button.closest('.llp-variation-fields');
-                    container.find('.llp-base-image').remove();
-                    container.find('.llp-bounds-wrapper').prepend('<img src="'+attachment.url+'" class="llp-base-image" />');
-                    setupBounds(container);
-                }
-            });
-            frame.open();
+    function openUploader(button){
+        var input = button.prev('.llp-media-field');
+        var frame = wp.media({
+            title: 'Select image',
+            button: {text: 'Use image'},
+            multiple: false
         });
+        frame.on('select', function(){
+            var attachment = frame.state().get('selection').first().toJSON();
+            input.val(attachment.id).trigger('change');
+            if(input.attr('name').indexOf('llp_base_image_id') !== -1){
+                var container = button.closest('.llp-variation-fields');
+                container.find('.llp-base-image').remove();
+                container.find('.llp-bounds-wrapper').prepend('<img src="'+attachment.url+'" class="llp-base-image" />');
+                setupBounds(container);
+            }
+        });
+        frame.open();
     }
+
+    $(document).on('click', '.llp-select-media', function(e){
+        e.preventDefault();
+        openUploader($(this));
+    });
 
     function setupBounds(container){
         var wrapper = container.find('.llp-bounds-wrapper');
@@ -79,11 +76,12 @@ jQuery(function($){
         updateBounds();
     }
 
-    $('.llp-select-media').each(function(){
-        initUploader($(this));
-    });
+    function initBounds(){
+        $('.llp-variation-fields').each(function(){
+            setupBounds($(this));
+        });
+    }
 
-    $('.llp-variation-fields').each(function(){
-        setupBounds($(this));
-    });
+    $(document).on('woocommerce_variations_loaded woocommerce_variation_added', initBounds);
+    initBounds();
 });
