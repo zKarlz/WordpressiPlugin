@@ -4,3 +4,21 @@
 .llp-editor { max-width:400px; width:100%; margin:0 auto; }
 .llp-editor img { max-width:100%; border:1px solid #ccc; display:block; }
 #llp-finalize { margin-top:0.5em; }
+
+.llp-drop-zone {
+    display:block;
+    padding:1em;
+    border:2px dashed #ccc;
+    text-align:center;
+    cursor:pointer;
+}
+
+.llp-drop-zone.llp-dragover,
+.llp-drop-zone:hover {
+    border-color:#0073aa;
+    background:#f0f8ff;
+}
+
+.llp-drop-zone input[type="file"] {
+    display:none;
+}

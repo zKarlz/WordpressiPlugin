@@ -4,9 +4,12 @@
  */
 ?>
 <div id="llp-customizer" class="llp-customizer">
-    <p>
-        <input type="file" id="llp-file" accept="image/*" />
-    </p>
+    <div class="llp-drop-container">
+        <label for="llp-file" id="llp-drop-zone" class="llp-drop-zone">
+            Drop image or click to upload
+            <input type="file" id="llp-file" accept="image/*" style="display:none;" />
+        </label>
+    </div>
     <div id="llp-editor" class="llp-editor" style="display:none;">
         <img id="llp-canvas" src="" alt="" />
         <p><button type="button" id="llp-finalize" class="button">Finalize</button></p>
