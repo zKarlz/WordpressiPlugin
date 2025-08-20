@@ -40,7 +40,7 @@ jQuery(function($){
 
     function initCropper(url){
         var bounds = scaleBounds(getBounds(), getMaxEditorSize());
-        editor.show().css({width:bounds.width, height:bounds.height});
+        editor.show().css({width:bounds.width});
         preview.show();
         cropperImg.attr('src', url);
         if(cropper){ cropper.destroy(); }
