@@ -12,8 +12,8 @@
     </div>
     <div id="llp-editor" class="llp-editor" style="display:none;">
         <img id="llp-canvas" src="" alt="" />
-        <p><button type="button" id="llp-finalize" class="button">Finalize</button></p>
     </div>
+    <p><button type="button" id="llp-finalize" class="button">Finalize</button></p>
     <div id="llp-preview" class="llp-preview" style="display:none;">
         <img src="" alt="" />
     </div>

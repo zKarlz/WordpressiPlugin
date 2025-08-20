@@ -3,7 +3,7 @@
 .llp-preview img { max-width: 100%; height: auto; display:block; border:1px solid #ccc; }
 .llp-editor { max-width:800px; width:100%; margin:0 auto; }
 .llp-editor img { max-width:100%; border:1px solid #ccc; display:block; }
-#llp-finalize { margin-top:0.5em; }
+#llp-finalize { display:block; margin:0.75em auto 0; }
 
 .llp-drop-zone {
     display:block;
