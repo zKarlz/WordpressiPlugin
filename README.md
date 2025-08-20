@@ -170,5 +170,19 @@ meta.json
 
 ---
 
+## Manual Testing
+
+1. **Customer upload & finalize**
+   - Log in as a user with the `customer` role.
+   - Obtain a REST nonce from the storefront (e.g., `wpApiSettings.nonce`).
+   - `POST /wp-json/llp/v1/upload` with the nonce and a valid image file.
+   - `POST /wp-json/llp/v1/finalize` using the returned `asset_id` and a variation ID.
+   - Both requests should return `200` responses.
+2. **Unauthorized requests**
+   - Repeat the above steps while logged out or without a nonce.
+   - Requests to `/upload` or `/finalize` should return `401`/`403` errors.
+
+---
+
 ## License
 MIT – Internal project for WooCommerce customization.

@@ -16,11 +16,13 @@ class LLP_REST {
         register_rest_route( 'llp/v1', '/upload', [
             'methods'             => 'POST',
             'callback'            => [ $this, 'handle_upload' ],
+            // Logged-in customers are allowed via authorize_request().
             'permission_callback' => [ $this, 'authorize_request' ],
         ] );
         register_rest_route( 'llp/v1', '/finalize', [
             'methods'             => 'POST',
             'callback'            => [ $this, 'handle_finalize' ],
+            // Logged-in customers are allowed via authorize_request().
             'permission_callback' => [ $this, 'authorize_request' ],
         ] );
 
@@ -138,10 +140,11 @@ class LLP_REST {
     }
 
     /**
-     * Ensure the user is logged in and can act on the specified order if one is provided.
+     * Ensure the user is logged in and has basic access before acting on the specified order.
      */
     private function check_order_capabilities( WP_REST_Request $request ) {
-        if ( ! is_user_logged_in() || ! current_user_can( 'upload_files' ) ) {
+        // Allow any logged-in user with read access (e.g. customers).
+        if ( ! is_user_logged_in() || ! current_user_can( 'read' ) ) {
             return new WP_Error( 'rest_forbidden', __( 'You are not allowed to perform this action', 'llp' ), [ 'status' => rest_authorization_required_code() ] );
         }
 
