@@ -26,7 +26,7 @@ Woo Laser Photo Mockup is a custom WooCommerce plugin that enables customers to 
   - Preview visible in cart, checkout, order details, and emails.
 
 - **Admin (Backend)**
-  - Variation editor: base image, mask, placement editor (drag/resize box).
+  - Variation editor: base image, mask with preview & remove, placement editor (drag/resize box).
   - Configure bounds, aspect ratio, min resolution, DPI.
   - Order view: preview thumbnail, open full image, re-render, purge uploads.
   - Auto-purge files N days after order is marked completed.
