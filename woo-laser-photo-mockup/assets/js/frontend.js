@@ -23,8 +23,8 @@ jQuery(function($){
     function scaleBounds(bounds, max){
         var ratio = Math.min(max / bounds.width, max / bounds.height, 1);
         return {
-            x: bounds.x,
-            y: bounds.y,
+            x: bounds.x * ratio,
+            y: bounds.y * ratio,
             width: bounds.width * ratio,
             height: bounds.height * ratio,
             rotation: bounds.rotation
@@ -56,7 +56,7 @@ jQuery(function($){
             cropBoxMovable:false,
             cropBoxResizable:false,
             ready: function(){
-                cropper.setCropBoxData({ width: bounds.width, height: bounds.height });
+                cropper.setCropBoxData({ left: bounds.x, top: bounds.y, width: bounds.width, height: bounds.height });
                 updateTransform();
             },
             crop: function(){
