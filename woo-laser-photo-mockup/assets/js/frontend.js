@@ -13,7 +13,12 @@ jQuery(function($){
 
     var cropperImg = $('#llp-canvas');
     var cropper = null;
-    var MAX_EDITOR_SIZE = 400;
+    var MAX_EDITOR_LIMIT = 800;
+
+    function getMaxEditorSize(){
+        var width = editor.parent().width();
+        return Math.min(width || MAX_EDITOR_LIMIT, MAX_EDITOR_LIMIT);
+    }
 
     function scaleBounds(bounds, max){
         var ratio = Math.min(max / bounds.width, max / bounds.height, 1);
@@ -34,7 +39,7 @@ jQuery(function($){
     }
 
     function initCropper(url){
-        var bounds = scaleBounds(getBounds(), MAX_EDITOR_SIZE);
+        var bounds = scaleBounds(getBounds(), getMaxEditorSize());
         editor.show().css({width:bounds.width, height:bounds.height});
         preview.show();
         cropperImg.attr('src', url);
@@ -76,7 +81,7 @@ jQuery(function($){
         if(!cropper) return;
         var transform = getTransform();
         transformField.val(JSON.stringify(transform));
-        var bounds = scaleBounds(getBounds(), MAX_EDITOR_SIZE);
+        var bounds = scaleBounds(getBounds(), getMaxEditorSize());
         var canvas = cropper.getCroppedCanvas({ width: bounds.width, height: bounds.height });
         if(canvas){
             previewImg.attr('src', canvas.toDataURL());
