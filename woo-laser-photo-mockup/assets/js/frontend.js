@@ -154,8 +154,7 @@ jQuery(function($){
             }
         }).catch(function(){
             $(document.body).trigger('wc_add_notice', ['Error finalizing image. Please try again.', 'error']);
-            finalizeBtn.prop('disabled', false);
-            addToCartBtn.prop('disabled', false);
+            $('.single_add_to_cart_button').prop('disabled', false);
         }).finally(function(){
             finalizeBtn.prop('disabled', false);
         });
