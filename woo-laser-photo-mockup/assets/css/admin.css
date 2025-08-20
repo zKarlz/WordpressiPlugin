@@ -3,3 +3,12 @@
 .llp-bounds-wrapper img.llp-base-image { display:block; max-width:100%; height:auto; }
 .llp-bounds-wrapper .llp-overlay { position:absolute; border:2px dashed #0073aa; background:rgba(0,115,170,0.2); cursor:move; box-sizing:border-box; }
 .llp-rotation-field { margin-top:5px; }
+.llp-image-preview img { display:block; max-width:80px; height:auto; margin-top:5px; }
+.llp-remove-media { margin-left:5px; }
+.llp-image-preview:empty::before {
+    content: attr(data-placeholder);
+    display: block;
+    margin-top: 5px;
+    color: #666;
+    font-style: italic;
+}

@@ -1,14 +1,17 @@
 jQuery(function($){
     function openUploader(button){
-        var input = button.prev('.llp-media-field');
+        var input      = button.prev('.llp-media-field');
         var frame = wp.media({
-            title: 'Select image',
-            button: {text: 'Use image'},
+            title: button.data('title') || 'Select image',
+            button: {text: button.data('button') || 'Use image'},
             multiple: false
         });
         frame.on('select', function(){
             var attachment = frame.state().get('selection').first().toJSON();
             input.val(attachment.id).trigger('change');
+            var img = $('<img>', { src: attachment.url, alt: attachment.alt || attachment.title || '' });
+            button.siblings('.llp-image-preview').html(img);
+            button.siblings('.llp-remove-media').show();
             if(input.attr('name').indexOf('llp_base_image_id') !== -1){
                 var container = button.closest('.llp-variation-fields');
                 container.find('.llp-base-image').remove();
@@ -22,6 +25,22 @@ jQuery(function($){
     $(document).on('click', '.llp-select-media', function(e){
         e.preventDefault();
         openUploader($(this));
+    });
+
+    $(document).on('click', '.llp-remove-media', function(e){
+        e.preventDefault();
+        var button = $(this);
+        var input  = button.siblings('.llp-media-field');
+        input.val('').trigger('change');
+        button.siblings('.llp-image-preview').empty();
+        button.hide();
+        if(input.attr('name').indexOf('llp_base_image_id') !== -1){
+            var container = button.closest('.llp-variation-fields');
+            container.find('.llp-base-image').remove();
+            container.find('.llp-overlay').removeAttr('style');
+            container.find('.llp-bounds-input').val('');
+            container.find('.llp-rotation').val('0').trigger('change');
+        }
     });
 
     function setupBounds(container){
