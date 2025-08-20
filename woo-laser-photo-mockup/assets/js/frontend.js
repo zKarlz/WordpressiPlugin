@@ -7,6 +7,8 @@ jQuery(function($){
     var finalizeBtn = $('#llp-finalize');
     var assetField  = $('#llp-asset-id');
     var thumbField  = $('#llp-thumb-url');
+    var originalField = $('#llp-original-url');
+    var compositeField = $('#llp-composite-url');
     var transformField = $('#llp-transform');
     var currentVariation = $('input.variation_id').val() || 0;
     var addToCartBtn = $('.single_add_to_cart_button').prop('disabled', true);
@@ -98,6 +100,8 @@ jQuery(function($){
         var file = this.files[0];
         if(!file) return;
         addToCartBtn.prop('disabled', true);
+        originalField.val('');
+        compositeField.val('');
         var reader = new FileReader();
         reader.onload = function(e){
             initCropper(e.target.result);
@@ -173,10 +177,16 @@ jQuery(function($){
             if(res2.thumb){
                 previewImg.attr('src', res2.thumb);
                 thumbField.val(res2.thumb);
-                preview.show();
-                editor.hide();
-                addToCartBtn.prop('disabled', false);
             }
+            if(res2.original){
+                originalField.val(res2.original);
+            }
+            if(res2.composite){
+                compositeField.val(res2.composite);
+            }
+            preview.show();
+            editor.hide();
+            addToCartBtn.prop('disabled', false);
         }).catch(function(){
             $(document.body).trigger('wc_add_notice', ['Error finalizing image. Please try again.', 'error']);
             $('.single_add_to_cart_button').prop('disabled', false);
