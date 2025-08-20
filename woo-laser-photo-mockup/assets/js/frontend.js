@@ -1,5 +1,6 @@
 jQuery(function($){
     var fileInput   = $('#llp-file');
+    var dropZone    = $('#llp-drop-zone');
     var editor      = $('#llp-editor');
     var preview     = $('#llp-preview');
     var previewImg  = $('#llp-preview img');
@@ -118,6 +119,25 @@ jQuery(function($){
             finalizeBtn.prop('disabled', false);
             addToCartBtn.prop('disabled', false);
         });
+    });
+
+    dropZone.on('dragover', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.addClass('llp-dragover');
+    }).on('dragleave', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.removeClass('llp-dragover');
+    }).on('drop', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.removeClass('llp-dragover');
+        var files = e.originalEvent.dataTransfer.files;
+        if(files && files.length){
+            fileInput[0].files = files;
+            fileInput.trigger('change');
+        }
     });
 
     finalizeBtn.on('click', function(){
