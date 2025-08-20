@@ -92,10 +92,19 @@ jQuery(function($){
             method: 'POST',
             headers: {'X-WP-Nonce': llpVars.nonce},
             body: fd
-        }).then(resp => resp.json()).then(function(res){
+        }).then(function(resp){
+            if(!resp.ok){
+                throw new Error('Upload failed');
+            }
+            return resp.json();
+        }).then(function(res){
             if(res.asset_id){
                 assetField.val(res.asset_id);
             }
+        }).catch(function(){
+            $(document.body).trigger('wc_add_notice', ['Error uploading image. Please try again.', 'error']);
+            finalizeBtn.prop('disabled', false);
+            addToCartBtn.prop('disabled', false);
         });
     });
 
@@ -118,7 +127,12 @@ jQuery(function($){
                 variation_id: currentVariation,
                 transform: transform
             })
-        }).then(r => r.json()).then(function(res2){
+        }).then(function(r){
+            if(!r.ok){
+                throw new Error('Finalize failed');
+            }
+            return r.json();
+        }).then(function(res2){
             if(res2.thumb){
                 previewImg.attr('src', res2.thumb);
                 thumbField.val(res2.thumb);
@@ -126,6 +140,10 @@ jQuery(function($){
                 editor.hide();
                 addToCartBtn.prop('disabled', false);
             }
+        }).catch(function(){
+            $(document.body).trigger('wc_add_notice', ['Error finalizing image. Please try again.', 'error']);
+            finalizeBtn.prop('disabled', false);
+            addToCartBtn.prop('disabled', false);
         }).finally(function(){
             finalizeBtn.prop('disabled', false);
         });
