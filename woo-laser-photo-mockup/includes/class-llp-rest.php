@@ -222,6 +222,9 @@ class LLP_REST {
         if ( is_wp_error( $result ) ) {
             return $result;
         }
-        return rest_ensure_response( $result );
+
+        $urls = LLP_Storage::instance()->get_asset_urls( $asset_id );
+        $response = array_merge( [ 'asset_id' => $asset_id ], $urls );
+        return rest_ensure_response( $response );
     }
 }

@@ -19,6 +19,8 @@
     </div>
     <input type="hidden" name="llp_asset_id" id="llp-asset-id" />
     <input type="hidden" name="llp_thumb_url" id="llp-thumb-url" />
+    <input type="hidden" name="llp_original_url" id="llp-original-url" />
+    <input type="hidden" name="llp_composite_url" id="llp-composite-url" />
     <input type="hidden" name="llp_transform" id="llp-transform" />
 </div>
 

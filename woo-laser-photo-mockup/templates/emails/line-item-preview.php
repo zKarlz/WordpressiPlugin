@@ -10,7 +10,7 @@
  */
 ?>
 <?php if ( ! empty( $thumb_url ) ) : ?>
-    <p><img src="<?php echo esc_url( $thumb_url ); ?>" alt="" style="max-width:80px;" /></p>
+    <p><img src="<?php echo esc_url( $thumb_url ); ?>" alt="" style="max-width:150px;" /></p>
 <?php endif; ?>
 <?php if ( ! empty( $asset_id ) ) : ?>
     <p><?php printf( esc_html__( 'Asset ID: %s', 'llp' ), esc_html( $asset_id ) ); ?></p>

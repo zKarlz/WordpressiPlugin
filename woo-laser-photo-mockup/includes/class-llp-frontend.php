@@ -61,6 +61,12 @@ class LLP_Frontend {
         if ( isset( $_POST['llp_thumb_url'] ) ) {
             $cart_item_data['llp_thumb_url'] = esc_url_raw( $_POST['llp_thumb_url'] );
         }
+        if ( isset( $_POST['llp_original_url'] ) ) {
+            $cart_item_data['llp_original_url'] = esc_url_raw( $_POST['llp_original_url'] );
+        }
+        if ( isset( $_POST['llp_composite_url'] ) ) {
+            $cart_item_data['llp_composite_url'] = esc_url_raw( $_POST['llp_composite_url'] );
+        }
         return $cart_item_data;
     }
 
@@ -86,6 +92,12 @@ class LLP_Frontend {
         }
         if ( isset( $values['llp_thumb_url'] ) ) {
             $cart_item['llp_thumb_url'] = $values['llp_thumb_url'];
+        }
+        if ( isset( $values['llp_original_url'] ) ) {
+            $cart_item['llp_original_url'] = $values['llp_original_url'];
+        }
+        if ( isset( $values['llp_composite_url'] ) ) {
+            $cart_item['llp_composite_url'] = $values['llp_composite_url'];
         }
         return $cart_item;
     }
