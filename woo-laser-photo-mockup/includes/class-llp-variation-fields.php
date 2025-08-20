@@ -51,12 +51,16 @@ class LLP_Variation_Fields {
             <p>
                 <label><?php esc_html_e( 'Base Image', 'llp' ); ?></label>
                 <input type="hidden" class="llp-media-field" name="llp_base_image_id[<?php echo esc_attr( $variation->ID ); ?>]" value="<?php echo esc_attr( $base_id ); ?>" />
-                <button type="button" class="button llp-select-media"><?php esc_html_e( 'Select Image', 'llp' ); ?></button>
+                <button type="button" class="button llp-select-media" data-title="<?php esc_attr_e( 'Select Base Image', 'llp' ); ?>" data-button="<?php esc_attr_e( 'Use Image', 'llp' ); ?>"><?php esc_html_e( 'Select Image', 'llp' ); ?></button>
+                <button type="button" class="button llp-remove-media" <?php echo $base_id ? '' : 'style="display:none;"'; ?>><?php esc_html_e( 'Remove', 'llp' ); ?></button>
+                <span class="llp-image-preview"><?php echo $base_id ? wp_get_attachment_image( $base_id, 'thumbnail' ) : ''; ?></span>
             </p>
             <p>
                 <label><?php esc_html_e( 'Mask Image', 'llp' ); ?></label>
                 <input type="hidden" class="llp-media-field" name="llp_mask_image_id[<?php echo esc_attr( $variation->ID ); ?>]" value="<?php echo esc_attr( $mask_id ); ?>" />
-                <button type="button" class="button llp-select-media"><?php esc_html_e( 'Select Mask', 'llp' ); ?></button>
+                <button type="button" class="button llp-select-media" data-title="<?php esc_attr_e( 'Select Mask', 'llp' ); ?>" data-button="<?php esc_attr_e( 'Use Mask', 'llp' ); ?>"><?php esc_html_e( 'Select Mask', 'llp' ); ?></button>
+                <button type="button" class="button llp-remove-media" <?php echo $mask_id ? '' : 'style="display:none;"'; ?>><?php esc_html_e( 'Remove', 'llp' ); ?></button>
+                <span class="llp-image-preview"><?php echo $mask_id ? wp_get_attachment_image( $mask_id, 'thumbnail' ) : ''; ?></span>
             </p>
             <p class="llp-bounds-field">
                 <label><?php esc_html_e( 'Bounds', 'llp' ); ?></label>
