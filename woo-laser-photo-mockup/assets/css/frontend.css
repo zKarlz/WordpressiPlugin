@@ -1,5 +1,6 @@
 .llp-customizer { margin-bottom: 1em; }
 .llp-preview { margin-top:0.5em; }
 .llp-preview img { max-width: 100%; height: auto; display:block; border:1px solid #ccc; }
+.llp-editor { max-width:400px; width:100%; margin:0 auto; }
 .llp-editor img { max-width:100%; border:1px solid #ccc; display:block; }
 #llp-finalize { margin-top:0.5em; }
